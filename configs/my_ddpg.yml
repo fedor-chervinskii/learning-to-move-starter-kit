@@ -1,0 +1,138 @@
+args:
+  logdir: /home/fedor_chervinskii/learning-to-move-starter-kit/logs/logs/smaller-model-ddpg-clean
+
+db:
+  db: MongoDB  # RedisDB or MongoDB
+  port: 12000
+  prefix: ddpg  # TODO: remove
+
+
+environment:
+  history_len: &history_len 1
+
+
+agents:
+  actor:
+    agent: SkeletonActor
+
+    state_net_params:  # state -> hidden representation
+      features_net_params:
+        in_features: 97  #  @TODO: take from env
+        history_len: *history_len
+        features: [32, 32]
+        use_bias: False
+        use_normalization: False
+        use_dropout: False
+        activation: ReLU
+      vector_field_net_params:
+        in_channels: 2  #  @TODO: take from env
+        history_len: *history_len
+        channels: [16, 16]
+        use_bias: False
+        use_groups: False
+        use_normalization: False
+        use_dropout: False
+        activation: ReLU
+      main_net_params:
+        features: [32, 32]
+        use_bias: False
+        use_normalization: False
+        use_dropout: False
+        activation: ReLU
+    policy_head_params:  # hidden representation -> ~policy
+      in_features: 32
+      policy_type: null
+      out_activation: Sigmoid
+      # out features would be taken from action_shape
+
+  critic:
+    agent: SkeletonStateActionCritic
+
+    state_action_net_params:  # state -> hidden representation
+      features_net_params:
+        in_features: 97  #  @TODO: take from env
+        history_len: *history_len
+        features: [64, 64]
+        use_bias: False
+        use_normalization: False
+        use_dropout: False
+        activation: ReLU
+      vector_field_net_params:
+        in_channels: 2  #  @TODO: take from env
+        history_len: *history_len
+        channels: [16, 16]
+        use_bias: False
+        use_groups: False
+        use_normalization: False
+        use_dropout: False
+        activation: ReLU
+      action_net_params:
+        in_features: 22  #  @TODO: take from env
+        features: [64, 64]
+        use_bias: False
+        use_normalization: False
+        use_dropout: False
+        activation: ReLU
+      main_net_params:
+        features: [64, 64]
+        use_bias: False
+        use_normalization: False
+        use_dropout: False
+        activation: ReLU
+    value_head_params:  # hidden representation -> value
+      in_features: 64
+      out_features: 1
+
+algorithm:
+  algorithm: DDPG
+
+  n_step: 1
+  gamma: 0.99
+  actor_tau: 0.0001
+  critic_tau: 0.0001
+  action_boundaries: [0.0, 1.0]
+
+  critic_loss_params:
+    criterion: HuberLoss
+    clip_delta: 1.0
+
+  actor_optimizer_params:
+    optimizer: Adam
+    lr: 0.001
+  critic_optimizer_params:
+    optimizer: Adam
+    lr: 0.001
+
+
+trainer:
+  batch_size: 32                # transitions
+  num_workers: 2
+  epoch_len: 3200               # batches, 400*256 = ~100k
+
+  replay_buffer_size: 1000000   # transitions
+  replay_buffer_mode: memmap    # numpy or memmap
+  min_num_transitions: &min_num_transitions 6400     # transitions
+
+  save_period: 10               # epochs
+  weights_sync_period: 1        # epochs
+  target_update_period: 1       # batches, update each 64k samples
+  online_update_period: 1       # batches, [actor, critic]
+
+#  epoch_limit: 500
+#  max_updates_per_sample: 32
+#  min_transitions_per_epoch: 3200
+
+
+sampler:
+  exploration_params:
+    - exploration: OrnsteinUhlenbeckProcess
+      probability: 1.
+      sigma: 0.5
+      theta: 0.15
+
+#    - exploration: ParameterSpaceNoise
+#      probability: 0.3
+#      target_sigma: 0.2
+#
+#    - exploration: NoExploration
+#      probability: 0.1

@@ -1,5 +1,5 @@
 args:
-  logdir: ./logs/l2m-ddpg  #  change me
+  logdir: /home/fedor_chervinskii/learning-to-move-starter-kit/logs/logs/190905-0712-ddpg
 
 db:
   port: 12000

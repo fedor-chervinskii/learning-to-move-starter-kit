@@ -4,8 +4,8 @@ args:
 
   vis: 0
   infer: 0   #  change me
-  valid: 1   #  change me
-  train: 8   #  change me
+  valid: 0   #  change me
+  train: 2   #  change me
 
 
 environment:
@@ -14,13 +14,13 @@ environment:
   frame_skip: 1
   reward_scale: 1.0
 
-  action_mean: 0.5
-  action_std: 0.5
+#  action_mean: 0.5
+#  action_std: 0.5
 
-  reload_period: 5
+#  reload_period: 5
 
-  difficulty: 0
-  integrator_accuracy: 0.0001
+  difficulty: 2
+#  integrator_accuracy: 0.0001
 
 
 sampler:
